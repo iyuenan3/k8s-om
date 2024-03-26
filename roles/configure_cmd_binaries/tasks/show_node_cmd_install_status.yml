@@ -1,0 +1,20 @@
+- name: Get sshpass installation status for {{node_ip}}
+  shell: ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no {{node_ip}} "ls -al /usr/local/bin/sshpass"
+  register: master_nodes_sshpass_install_status
+
+- name: Show sshpass installation status for {{node_ip}}
+  debug: msg="{{master_nodes_sshpass_install_status.stdout_lines}}"
+
+- name: Get unzip installation status for {{node_ip}}
+  shell: ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no {{node_ip}} "ls -al /usr/local/bin/unzip"
+  register: master_nodes_unzip_install_status
+
+- name: Show unzip installation status for {{node_ip}}
+  debug: msg="{{master_nodes_unzip_install_status.stdout_lines}}"
+
+- name: Get wget installation status for {{node_ip}}
+  shell: ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no {{node_ip}} "ls -al /usr/local/bin/wget"
+  register: master_nodes_wget_install_status
+
+- name: Show wget installation status for {{node_ip}}
+  debug: msg="{{master_nodes_wget_install_status.stdout_lines}}"

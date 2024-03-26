@@ -1,0 +1,16 @@
+---
+- name: Configure tenant
+  hosts: all
+  gather_facts: False
+
+  vars_files:
+    - vars/common.yml
+    - vars/tenant.yml
+
+  vars:
+    - playbook_file_name: configure-tenant.yml
+
+  roles:
+    - configure_tenant_clusterroles
+    - configure_tenant
+...

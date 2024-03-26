@@ -1,0 +1,18 @@
+- name: Configure CPU resource quota
+  block:
+    - name: Set namespace according to userindex
+      set_fact:
+        namespace: "{{ namespace_prefix }}{{ item }}"
+    - name: Configure CPU resource quota for {{ namespace }} for {{ group_names[0] }}
+      shell: |
+             cat <<EOF | kubectl apply {{ KUBE_CONFIG }} -n {{ namespace }} -f -
+             apiVersion: v1
+             kind: ResourceQuota
+             metadata:
+               name: tenant-resource-quota
+             spec:
+               hard:
+                 requests.cpu: {{ request_cpu }}
+                 limits.cpu: {{ limit_cpu }}
+             EOF
+  when: configure_action == "create" and group_names == ['ocp']

@@ -1,0 +1,16 @@
+- name: Configure sshkey
+  block:
+    - name: Send config_sshkey script to target controller
+      template:
+        src: templates/config_sshkey.sh.jinja
+        dest: /tmp/config_sshkey.sh
+        mode: 0500
+
+    - name: Configure sshkey for tenant {{ username }}
+      shell: /tmp/config_sshkey.sh {{ username }} "{{ NODES_IP }}" "{{ SSH_PARAMS }}"
+
+    - name: Delete config_sshkey script
+      file:
+        path: "/tmp/config_sshkey.sh"
+        state: absent
+  when: configure_action == "create"

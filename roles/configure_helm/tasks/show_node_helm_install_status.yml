@@ -1,0 +1,6 @@
+- name: Get a node helm install status for {{node_ip}}
+  shell: ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no {{node_ip}} "ls -al /usr/local/bin/helm*"
+  register: master_nodes_helm_install_status
+
+- name: Show a node helm install status for {{node_ip}}
+  debug: msg="{{master_nodes_helm_install_status.stdout_lines}}"

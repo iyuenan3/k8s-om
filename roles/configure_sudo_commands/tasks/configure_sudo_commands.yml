@@ -1,0 +1,10 @@
+- name: Set username fact {{ username_prefix }}{{ item }}
+  set_fact:
+    username: "{{ username_prefix }}{{ item }}"
+
+- name: Config sudo commands for {{ username }} of OCP environments
+  shell: ssh {{ SSH_PARAMS }} {{ node_item }} "sudo bash -c \"echo {{ username }}' ALL=(ALL) NOPASSWD:{{ sudo_cmds }}' > /etc/sudoers.d/{{ username }}\""
+  with_items: '{{NODES_IP.split()}}'
+  loop_control:
+    loop_var: node_item
+  when: group_names == ['ocp']

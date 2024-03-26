@@ -1,0 +1,15 @@
+---
+- name: Configure tenant resource quota
+  hosts: all
+  gather_facts: False
+
+  vars_files:
+    - vars/common.yml
+    - vars/tenant.yml
+
+  vars:
+    - playbook_file_name: configure-tenant-resource-quota.yml
+
+  roles:
+    - configure_tenant_resource_quota
+...

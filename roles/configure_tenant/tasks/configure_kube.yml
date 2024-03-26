@@ -1,0 +1,66 @@
+- name: Configure kube config file
+  block:
+    - name: Send config_kube script to target controller
+      template:
+        src: templates/config_kube.sh.jinja
+        dest: /tmp/config_kube.sh
+        mode: 0500
+
+    - name: Configure kube config file for tenant {{ username }}
+      shell: /tmp/config_kube.sh {{ username }} {{ namespace }} {{ host_group }}
+
+    - name: Delete config_kube script
+      file:
+        path: "/tmp/config_kube.sh"
+        state: absent
+
+    - name: Pre-check whether serviceaccount {{ username }} exists for tenant {{ username }}
+      shell: kubectl get serviceaccount -n {{ namespace }} {{ username }}
+      register: check_serviceaccount
+      ignore_errors: True
+
+    - name: Create serviceaccount {{ username }} for tenant {{ username }}
+      shell: "kubectl create serviceaccount -n {{ namespace }} {{ username }}"
+      when:
+        - check_serviceaccount.stderr is search("not found")
+
+    - name: Get serviceaccount {{ username }} token name from secret
+      shell: "kubectl get secret -n {{ namespace }} | egrep {{ username }}-token-[a-z0-9]+ | awk '{print $1}' | head -n 1"
+      register: serviceaccount_token_name
+
+    - name: Set kube config file fact
+      set_fact:
+        CONFIG_FILE: "/var/home/core/.kube-{{ username }}/config"
+
+    - name: Get the token value of {{ serviceaccount_token_name.stdout }}
+      shell: "kubectl describe secret -n {{ namespace }} {{ serviceaccount_token_name.stdout }} | grep ^token: | awk '{print $2}'"
+      register: serviceaccount_token_value
+
+    - name: Remove client-certificate and client-key from kube config file for {{ username }}
+      lineinfile:
+        path: "{{ CONFIG_FILE }}"
+        state: absent
+        regexp: '{{ line_item }}'
+      loop:
+        - client-certificate
+        - client-key
+      loop_control:
+        loop_var: line_item
+
+    - name: Add the token value into kube config file for serviceaccount {{ username }}
+      shell: "kubectl config set-credentials {{ username }} --token={{ serviceaccount_token_value.stdout }} --kubeconfig={{ CONFIG_FILE }}"
+
+    - name: Send sync_kube_config script to target controller
+      template:
+        src: templates/sync_kube_config.sh.jinja
+        dest: /tmp/sync_kube_config.sh
+        mode: 0500
+
+    - name: Sync kube config file for tenant {{ username }}
+      shell: /tmp/sync_kube_config.sh {{ username }} "{{ NODES_IP }}" "{{ SSH_PARAMS }}"
+
+    - name: Delete sync_kube_config script
+      file:
+        path: "/tmp/sync_kube_config.sh"
+        state: absent
+  when: configure_action == "create" and group_names == ['ocp']

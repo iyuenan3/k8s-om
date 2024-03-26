@@ -1,0 +1,9 @@
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: low-priority-nopreempting-{{ namespace }}
+value: 900000
+preemptionPolicy: Never
+globalDefault: false
+description: "This priority class give pods the lower-priority"
+

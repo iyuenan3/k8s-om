@@ -1,0 +1,2 @@
+- include_tasks: configure_tenant_resource_quota.yml
+  with_sequence: start={{ first_user_index }} end={{ last_user_index }} stride=1

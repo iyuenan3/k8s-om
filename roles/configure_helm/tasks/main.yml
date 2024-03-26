@@ -1,0 +1,67 @@
+- name: Prepare Helm3 environment
+  block:
+  - name: Delete original helm for {{ group_names[0] }}
+    file:
+      path: "/usr/local/bin/helm"
+      state: absent
+    become: True
+
+  - name: Uncompress {{ helm3_pkg_name }}
+    delegate_to: localhost
+    unarchive:
+      remote_src: no
+      src: "files/{{ helm3_pkg_name }}"
+      dest: "/tmp/"
+      extra_opts:
+      - --strip=1
+      mode: 0755
+    become: True
+
+  - name: Scp helm3 from jump server to Node
+    copy:
+      src: "/tmp/helm3"
+      dest: "/usr/local/bin/"
+    become: True
+
+  - name: Delete {{ helm3_pkg_name }}
+    delegate_to: localhost
+    file:
+      path: "/tmp/helm3"
+      state: absent
+  when: group_names == ['ocp']
+
+- name: Create soft link from Helm to Helm3
+  file:
+    path: "/usr/local/bin/helm"
+    state: link
+    src: "/usr/local/bin/helm3"
+    mode: 0755
+  become: True
+
+- name: Show number of masters
+  debug:
+    msg: "The number of masters is {{ NUM_OF_MASTERS }}"
+
+- name: Sync helm to other master nodes
+  block:
+    - name: Send shell script to remote
+      template:
+        src: templates/sync.sh.jinja
+        dest: /tmp/sync.sh
+        mode: 0700
+
+    - name: Sync helm to other nodes
+      shell: /tmp/sync.sh "{{ NODES_IP }}" "{{ SSH_PARAMS }}"
+
+    - name: Delete sync shell script
+      file:
+        path: "/tmp/sync.sh"
+        state: absent
+
+- name: Show helm install status
+  block:
+
+  - name: Show installed helm status for other nodes
+    include: show_node_helm_install_status.yml node_ip='{{item}}'
+    with_items: '{{NODES_IP.split()}}'
+

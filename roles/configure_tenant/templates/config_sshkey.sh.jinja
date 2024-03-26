@@ -1,0 +1,28 @@
+#!/bin/bash
+
+USERNAME=$1
+NODES=$2
+SSH_PARAMS=$3
+
+# Prepare sshkey path and file for specified user
+if [ -d ~/.ssh-$USERNAME ];then
+    rm -rf ~/.ssh-$USERNAME
+fi
+mkdir -p ~/.ssh-$USERNAME
+ssh-keygen -f ~/.ssh-$USERNAME/id_rsa -t rsa -N ''
+cat ~/.ssh-$USERNAME/id_rsa.pub >> ~/.ssh-$USERNAME/authorized_keys
+
+# Sync generated sshkey to each node for specified user
+for node in $NODES; do
+    rsync -azv ~/.ssh-$USERNAME -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" "[$node]:~/" > /dev/null 2>&1
+    lock_check_result=$(ssh $SSH_PARAMS "$node" "sudo lsattr -la /home/$USERNAME/.ssh |grep -i 'Immutable'")
+    if [ ! -z "$lock_check_result" ];then
+        ssh $SSH_PARAMS "$node" "sudo chattr -R -i /home/$USERNAME/.ssh"
+    fi
+    ssh $SSH_PARAMS "$node" "sudo rm -rf /home/$USERNAME/.ssh && sudo cp -rf ~/.ssh-$USERNAME /home/$USERNAME/.ssh && \
+                            sudo chown $USERNAME:users -R /home/$USERNAME/.ssh"
+done
+
+for node in $NODES; do
+    ssh $SSH_PARAMS "$node" "sudo rm -rf ~/.ssh-$USERNAME"
+done

@@ -1,0 +1,13 @@
+#!/bin/bash
+
+USERNAME=$1
+NODES=$2
+SSH_PARAMS=$3
+
+# Sync configured config file to each node for specified user
+SSL_DIR=/etc/kubernetes/ssl
+for node in $NODES; do
+    rsync -azv ~/.kube -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" "[$node]:~/" > /dev/null 2>&1
+    ssh $SSH_PARAMS "$node" "sudo chown $USERNAME:users -R /home/$USERNAME/.kube"
+    ssh $SSH_PARAMS "$node" "sudo chmod o+r $SSL_DIR/cluster-admin.pem $SSL_DIR/cluster-admin-key.pem"
+done

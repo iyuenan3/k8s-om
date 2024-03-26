@@ -1,0 +1,16 @@
+- name: Configure python for all master nodes
+  block:
+    - name: Send python configure script to target controller
+      template:
+        src: templates/python.sh.jinja
+        dest: /tmp/python.sh
+        mode: 0500
+
+    - name: Create python soft link
+      shell: /tmp/python.sh "{{ NODES_IP }}" "{{ SSH_PARAMS }}"
+
+    - name: Delete python configure script
+      file:
+        path: "/tmp/python.sh"
+        state: absent
+  when: group_names == ['ocp']

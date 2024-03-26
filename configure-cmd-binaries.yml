@@ -1,0 +1,14 @@
+---
+- name: Configure command binaries
+  hosts: all
+  gather_facts: False
+
+  vars_files:
+    - vars/common.yml
+
+  vars:
+    - playbook_file_name: configure-cmd-binaries.yml
+
+  roles:
+    - configure_cmd_binaries
+...

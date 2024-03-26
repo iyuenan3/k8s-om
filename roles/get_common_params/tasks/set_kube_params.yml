@@ -1,0 +1,6 @@
+- name: Set KUBE_CONFIG
+  block:
+    - name: Set KUBE_CONFIG for {{ group_names[0] }}
+      set_fact:
+        KUBE_CONFIG: ""
+      when: group_names == ['ocp']

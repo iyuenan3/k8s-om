@@ -1,0 +1,14 @@
+---
+- name: Configure Python
+  hosts: all
+  gather_facts: False
+
+  vars_files:
+    - vars/common.yml
+
+  vars:
+    - playbook_file_name: configure-python.yml
+
+  roles:
+    - configure_python
+...

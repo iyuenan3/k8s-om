@@ -1,0 +1,18 @@
+- name: Start to configure single tenant {{ username_prefix }}{{ item }}'s resources
+  block:
+    - name: Set username fact {{ username_prefix }}{{ item }}
+      set_fact:
+        username: "{{ username_prefix }}{{ item }}"
+    - name: Set namespace fact {{ namespace_prefix }}{{ item }}
+      set_fact:
+        namespace: "{{ namespace_prefix }}{{ item }}"
+    - name: Set group name {{ group_names[0] }}
+      set_fact:
+        host_group: "{{ group_names[0] }}"
+
+- include_tasks: configure_linux_user.yml
+- include_tasks: configure_sshkey.yml
+- include_tasks: configure_namespace.yml
+- include_tasks: configure_kube.yml
+- include_tasks: configure_rolebinding.yml
+- include_tasks: configure_image_registry_auth.yml

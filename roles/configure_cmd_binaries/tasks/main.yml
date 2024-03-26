@@ -1,0 +1,46 @@
+- name: Scp sshpass from jump server to Node
+  copy:
+    src: "files/sshpass"
+    dest: "/usr/local/bin/"
+    owner: root
+    group: root
+    mode: 0755
+  become: True
+
+- name: Scp unzip from jump server to Node
+  copy:
+    src: "files/unzip"
+    dest: "/usr/local/bin/"
+    owner: root
+    group: root
+    mode: 0755
+  become: True
+
+- name: Scp wget from jump server to Node
+  copy:
+    src: "files/wget"
+    dest: "/usr/local/bin/"
+    owner: root
+    group: root
+    mode: 0755
+  become: True
+
+- name: Sync cmd to other nodes
+  block:
+    - name: Send shell script to nodes
+      template:
+        src: templates/sync.sh.jinja
+        dest: /tmp/sync.sh
+        mode: 0700
+
+    - name: Sync cmd to other nodes
+      shell: /tmp/sync.sh "{{ NODES_IP }}" "{{ SSH_PARAMS }}"
+
+    - name: Delete sync shell script
+      file:
+        path: "/tmp/sync.sh"
+        state: absent
+
+- name: Show cmd installation status for other nodes
+  include: show_node_cmd_install_status.yml node_ip='{{item}}'
+  with_items: '{{NODES_IP.split()}}'

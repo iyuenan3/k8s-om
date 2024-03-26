@@ -1,0 +1,30 @@
+---
+- name: Create clusterrole for tenant
+  block:
+
+    - name: Send node level clusterrole yaml file to target controller
+      template:
+        src: node_clusterrole.yml.jinja
+        dest: "/tmp/node_clusterrole.yml"
+
+    - name: Create node level clusterrole for tenant
+      command: kubectl apply -f "/tmp/node_clusterrole.yml"
+
+    - name: Delete node level clusterrole yaml file from target controller
+      file:
+        path: "/tmp/node_clusterrole.yml"
+        state: absent
+
+    - name: Send namespace level clusterrole yaml file to target controller
+      template:
+        src: namespace_clusterrole.yml.jinja
+        dest: "/tmp/namespace_clusterrole.yml"
+
+    - name: Create namespace level clusterrole for tenant
+      command: kubectl apply -f "/tmp/namespace_clusterrole.yml"
+
+    - name: Delete namespace level clusterrole yaml file from target controller
+      file:
+        path: "/tmp/namespace_clusterrole.yml"
+        state: absent
+  when: configure_action == "create" and group_names == ['ocp']

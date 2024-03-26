@@ -1,0 +1,8 @@
+# Default configure action is create.
+# It could be used during configuring cluster network, tenant level resources, etc.
+# Change to 'delete' or override variables through ansible command:
+# ansible-playbook -i hosts configure-tenant.yml -e '{configure_action: delete}'
+configure_action: create
+
+# This is k8s-om latest version which should be same with CHANGELOG.md
+version: 0.0.1

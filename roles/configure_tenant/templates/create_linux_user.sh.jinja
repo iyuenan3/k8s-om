@@ -1,0 +1,36 @@
+#!/bin/bash
+
+USERNAME=$1
+PASSWORD=$2
+HOST_GROUP=$3
+NODES=$4
+SSH_PARAMS=$5
+
+function delete_linux_user() {
+    if ssh $SSH_PARAMS "$node" "sudo lsattr -la /home/$USERNAME/.ssh |grep -i 'Immutable'"; then
+        ssh $SSH_PARAMS "$node" "sudo chattr -R -i /home/$USERNAME/.ssh"
+    fi
+    if ssh $SSH_PARAMS "$node" "id $USERNAME";then
+        ssh $SSH_PARAMS "$node" "sudo killall -u $USERNAME; sudo userdel -r $USERNAME -f"
+    fi
+    if ssh $SSH_PARAMS "$node" "sudo lsattr -la /home/$USERNAME"; then
+        ssh $SSH_PARAMS "$node" "sudo rm -rf /home/$USERNAME"
+    fi
+    if ssh $SSH_PARAMS "$node" "sudo ls -la /tmp/$USERNAME"; then
+        ssh $SSH_PARAMS "$node" "sudo rm -rf /tmp/$USERNAME"
+    fi
+}
+
+function add_linux_user() {
+    ssh $SSH_PARAMS "$node" "sudo useradd -m "" $USERNAME && \
+    echo $USERNAME:$PASSWORD | sudo chpasswd -m && \
+    sudo chage -m 0 -M 99999 -I -1 -E -1 $USERNAME"
+    if [ $? -ne 0 ];then
+        echo "create linux user $USERNAME on $node failure" && exit 1
+    fi
+}
+
+for node in $NODES; do
+    delete_linux_user
+    add_linux_user
+done

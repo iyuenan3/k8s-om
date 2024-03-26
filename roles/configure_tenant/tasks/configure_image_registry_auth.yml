@@ -1,0 +1,18 @@
+- name: Configure image registry for OCP
+  block:
+  - name: Set bashrc file name fact for {{ username }}
+    set_fact:
+      bashrc: "/var/home/{{ username }}/.bashrc"
+
+  - name: Add role system:image-builder to user {{ namespace }}:{{ username }}
+    shell: oc adm policy add-role-to-user system:image-builder system:serviceaccount:{{ namespace }}:{{ username }} -n {{ namespace }}
+
+  - name: Configure image registry authentication for OCP {{ username }}
+    shell: ssh {{ SSH_PARAMS }} {{ node_item }} "sed -i '/login/d' {{ bashrc }};
+           echo 'podman login -u {{ username }} -p \$(oc whoami -t) image-registry.openshift-image-registry.svc:5000 > /dev/null 2>&1' >> {{ bashrc }}"
+    with_items: '{{MASTER_NODES_IPS.split()}}'
+    loop_control:
+      loop_var: node_item
+    become: yes
+    become_user: "{{ username }}"
+  when: configure_action == "create" and group_names == ['ocp']

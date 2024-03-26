@@ -1,0 +1,18 @@
+#!/bin/bash
+
+USERNAME=$1
+NODES=$2
+SSH_PARAMS=$3
+
+# Sync configured config file to each node for specified user
+for node in $NODES; do
+    rsync -azv ~/.kube-$USERNAME -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" "[$node]:~/" > /dev/null 2>&1
+    ssh $SSH_PARAMS "$node" "sudo rm -rf /home/$USERNAME/.kube && \
+    sudo cp -rf ~/.kube-$USERNAME /home/$USERNAME/.kube && \
+    sudo chown $USERNAME:users -R /home/$USERNAME/.kube && \
+    sudo chmod 400 /home/$USERNAME/.kube/config"
+done
+
+for node in $NODES; do
+    ssh $SSH_PARAMS "$node" "sudo rm -rf ~/.kube-$USERNAME"
+done

@@ -1,0 +1,2 @@
+- include_tasks: set_kube_params.yml
+- include_tasks: set_node_params.yml

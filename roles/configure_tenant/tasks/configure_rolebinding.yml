@@ -1,0 +1,27 @@
+- name: Create rolebinding for tenant
+  block:
+
+    - name: Pre-check whether legacy clusterrolebinding k8s-node-crb exists
+      shell: kubectl {{ KUBE_CONFIG }} get clusterrolebindings k8s-node-crb
+      register: check_result
+      ignore_errors: True
+
+    - name: Delete legacy clusterrolebinding k8s-node-crb
+      shell: kubectl {{ KUBE_CONFIG }} delete clusterrolebindings k8s-node-crb
+      when:
+        - check_result.stdout is search("k8s-node-crb")
+
+    - name: Send rolebinding yaml file to target controller
+      template:
+        src: rolebinding.yml.jinja
+        dest: "/tmp/rolebinding.yml"
+
+    - name: Create rolebinding for {{ username }}
+      command: kubectl apply -f "/tmp/rolebinding.yml"
+
+    - name: Delete rolebinding yaml file from target controller
+      file:
+        path: "/tmp/rolebinding.yml"
+        state: absent
+
+  when: configure_action == "create" and group_names == ['ocp']

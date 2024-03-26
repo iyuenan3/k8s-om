@@ -1,0 +1,40 @@
+- name: Create single linux user
+  block:
+    - name: Send create_linux_user script to target controller
+      template:
+        src: templates/create_linux_user.sh.jinja
+        dest: /tmp/create_linux_user.sh
+        mode: 0500
+
+    - name: Create linux user {{ username }} for {{ host_group }}
+      shell: /tmp/create_linux_user.sh {{ username }} {{ user_passwd }} {{ host_group }} "{{ NODES_NAME }}" "{{ SSH_PARAMS }}"
+
+    - name: Config sudo commands for {{ username }} of OCP environments
+      shell: ssh {{ SSH_PARAMS }} {{ node_item }} "sudo bash -c \"echo {{ username }}' ALL=(ALL) NOPASSWD:{{ sudo_cmds }}' > /etc/sudoers.d/{{ username }}\""
+      with_items: '{{NODES_IP.split()}}'
+      loop_control:
+        loop_var: node_item
+      when: group_names == ['ocp']
+
+    - name: Delete create_linux_user script
+      file:
+        path: "/tmp/create_linux_user.sh"
+        state: absent
+  when: configure_action == "create"
+
+- name: Delete single linux user
+  block:
+    - name: Send delete_linux_user script to target controller
+      template:
+        src: templates/delete_linux_user.sh.jinja
+        dest: /tmp/delete_linux_user.sh
+        mode: 0500
+
+    - name: Delete linux user {{ username }} for {{ host_group }}
+      shell: /tmp/delete_linux_user.sh {{ username }} "{{ NODES_NAME }}" {{ host_group }} "{{ SSH_PARAMS }}"
+
+    - name: Delete delete_linux_user script
+      file:
+        path: "/tmp/delete_linux_user.sh"
+        state: absent
+  when: configure_action == "delete"

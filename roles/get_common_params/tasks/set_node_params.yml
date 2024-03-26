@@ -1,0 +1,95 @@
+- name: Get all nodes infos for {{ group_names[0] }}
+  block:
+
+    - name: Get all nodes info in json format for {{ group_names[0] }}
+      shell: kubectl get nodes {{ KUBE_CONFIG }} -o json
+      register: nodes_infos
+
+    - name: Set NODES_INFO fact for {{ group_names[0] }}
+      set_fact:
+        NODES_INFO: "{{nodes_infos.stdout}}"
+
+- name: Start to get nodes IP and hostname
+  block:
+
+    - name: Set empty array NODES_IP and NODES_NAME
+      set_fact:
+        NODES_IP: ""
+        NODES_NAME: ""
+
+    - name: Set nodes IP and hostname
+      set_fact:
+        NODES_IP: "{{ NODES_IP + ' ' + item.status.addresses[0].address }}"
+        NODES_NAME: "{{ NODES_NAME + ' ' + item.status.addresses[1].address }}"
+      loop: "{{ NODES_INFO['items'] }}"
+      no_log: True
+
+    - name: Set NUM_OF_NODES fact
+      set_fact:
+        NUM_OF_NODES: "{{ NODES_IP.split() | length }}"
+
+- name: Start to get master node ips and numbers for OCP
+  block:
+
+    - name: Set empty array MASTER_NODES_IPS
+      set_fact:
+        MASTER_NODES_IPS: ""
+
+    - name: Set master nodes ip for OCP
+      set_fact:
+        MASTER_NODES_IPS: "{{ MASTER_NODES_IPS + ' ' + item.status.addresses[0].address }}"
+      when: item.metadata.labels.__contains__('node-role.kubernetes.io/master')
+      loop: "{{ NODES_INFO['items'] }}"
+      no_log: True
+
+    - name: Set NUM_OF_MASTERS fact for OCP
+      set_fact:
+        NUM_OF_MASTERS: "{{ MASTER_NODES_IPS.split() | length }}"
+
+  when:
+    - group_names == ['ocp']
+
+- name: Start to get worker nodes name and capacity for OCP
+  block:
+
+    - name: Set empty array WORKER_NODES_NAME
+      set_fact:
+        WORKER_NODES_NAME: ""
+
+    - name: Set worker nodes name for OCP
+      set_fact:
+        WORKER_NODES_NAME: "{{ WORKER_NODES_NAME + ' ' + item.status.addresses[1].address }}"
+      when: item.metadata.labels.__contains__('node-role.kubernetes.io/worker')
+      loop: "{{ NODES_INFO['items'] }}"
+      no_log: True
+
+    - name: Get worker nodes capacity info for OCP
+      shell: kubectl get node {{ WORKER_NODES_NAME.split()[0]}} -o json | jq '.status.capacity'
+      register: capacity_info
+
+    - name: Set worker nodes capacity info for OCP
+      set_fact:
+        WORKER_NODES_CAPACITY_INFO: "{{capacity_info.stdout}}"
+
+  when:
+    - group_names == ['ocp']
+
+- name: Show nodes InternalIP
+  debug:
+    var: NODES_IP
+
+- name: Show nodes Hostname
+  debug:
+    var: NODES_NAME
+
+- name: Show master nodes IPs
+  debug:
+    var: MASTER_NODES_IPS
+
+- name: Show worker nodes name
+  debug:
+    var: WORKER_NODES_NAME
+
+- name: Show worker nodes capacity info
+  debug:
+    var: WORKER_NODES_CAPACITY_INFO

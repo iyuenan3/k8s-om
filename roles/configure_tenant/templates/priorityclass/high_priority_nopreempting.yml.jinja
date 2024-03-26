@@ -1,0 +1,9 @@
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: high-priority-nopreempting-{{ namespace }}
+value: 1000000
+preemptionPolicy: Never
+globalDefault: false
+description: "This priority class give pod the high priority but never preempt the other pods"
+

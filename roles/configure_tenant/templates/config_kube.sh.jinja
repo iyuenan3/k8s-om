@@ -1,0 +1,23 @@
+#!/bin/bash
+
+USERNAME=$1
+NAMESPACE=$2
+HOST_GROUP=$3
+
+# Prepare config file for specified user
+mkdir -p ~/.kube-$USERNAME
+if [  $HOST_GROUP == 'ocp' ];then
+    cp ~/.kube/config ~/.kube-$USERNAME/config
+else
+    exit 1
+fi
+
+
+if [ $HOST_GROUP == 'ocp' ];then
+    kubectl config get-contexts -o name --kubeconfig ~/.kube-$USERNAME/config | \
+    grep -v ^admin|xargs -i kubectl config delete-context {} --kubeconfig ~/.kube-$USERNAME/config
+    kubectl config get-users --kubeconfig ~/.kube-$USERNAME/config |grep -v NAME|xargs -i kubectl config delete-user {} --kubeconfig ~/.kube-$USERNAME/config
+    kubectl config set-context admin  --namespace=$NAMESPACE --user=$USERNAME  --kubeconfig ~/.kube-$USERNAME/config
+    kubectl config rename-context admin $USERNAME --kubeconfig ~/.kube-$USERNAME/config
+    kubectl config use-context $USERNAME --kubeconfig ~/.kube-$USERNAME/config
+fi

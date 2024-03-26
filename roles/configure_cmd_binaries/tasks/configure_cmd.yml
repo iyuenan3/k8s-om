@@ -1,0 +1,28 @@
+- name: Scp {{ pkg_name }} from jump server to Node
+  copy:
+    src: "files/{{ pkg_name }}"
+    dest: "/usr/local/bin/"
+    owner: root
+    group: root
+    mode: 0755
+  become: True
+
+- name: Sync {{ pkg_name }} to other nodes
+  block:
+    - name: Send shell script to nodes
+      template:
+        src: templates/sync.sh.jinja
+        dest: /tmp/sync.sh
+        mode: 0700
+
+    - name: Sync {{ pkg_name }} to other nodes
+      shell: /tmp/sync.sh "{{ NODES_IP }}" "{{ SSH_PARAMS }}" "{{ pkg_name }}"
+
+    - name: Delete sync shell script
+      file:
+        path: "/tmp/sync.sh"
+        state: absent
+
+- name: Show {{ pkg_name }} installation status for other nodes
+  include: show_node_cmd_install_status.yml node_ip='{{item}}' cmd_name='{{pkg_name}}'
+  with_items: '{{NODES_IP.split()}}'

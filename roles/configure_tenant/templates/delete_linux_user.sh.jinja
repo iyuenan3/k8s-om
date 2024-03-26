@@ -1,0 +1,25 @@
+#!/bin/bash
+
+USERNAME=$1
+NODES=$2
+HOST_GROUP=$3
+SSH_PARAMS=$4
+
+function delete_linux_user() {
+    if ssh $SSH_PARAMS "$node" "sudo lsattr -la /home/$USERNAME/.ssh |grep -i 'Immutable'"; then
+        ssh $SSH_PARAMS "$node" "sudo chattr -R -i /home/$USERNAME/.ssh"
+    fi
+    if ssh $SSH_PARAMS "$node" "id $USERNAME";then
+        ssh $SSH_PARAMS "$node" "sudo killall -u $USERNAME; sudo userdel -r $USERNAME -f"
+    fi
+    if ssh $SSH_PARAMS "$node" "sudo lsattr -la /home/$USERNAME"; then
+        ssh $SSH_PARAMS "$node" "sudo rm -rf /home/$USERNAME"
+    fi
+    if ssh $SSH_PARAMS "$node" "sudo ls -la /tmp/$USERNAME"; then
+        ssh $SSH_PARAMS "$node" "sudo rm -rf /tmp/$USERNAME"
+    fi
+}
+
+for node in $NODES; do
+    delete_linux_user
+done

@@ -1,0 +1,11 @@
+#!/bin/bash
+
+MASTERS=$1
+SSH_PARAMS=$2
+
+for master in $MASTERS; do
+    scp $SSH_PARAMS /usr/local/bin/sshpass [$master]:~/
+    scp $SSH_PARAMS /usr/local/bin/unzip [$master]:~/
+    scp $SSH_PARAMS /usr/local/bin/wget [$master]:~/
+    ssh $SSH_PARAMS "$master" "sudo mv sshpass unzip wget /usr/local/bin/"
+done

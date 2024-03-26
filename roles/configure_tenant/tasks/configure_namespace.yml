@@ -1,0 +1,19 @@
+- name: Configure namespace for {{ group_names[0] }}
+  block:
+
+    - name: Pre-check namespace whether {{ namespace }} exists for {{ group_names[0] }}
+      shell: kubectl {{ KUBE_CONFIG }} get namespace {{ namespace }}
+      register: check_namespace
+      ignore_errors: True
+
+    - name: Create namespace {{ namespace }} for {{ group_names[0] }}
+      shell: kubectl {{ KUBE_CONFIG }} create namespace {{ namespace }}
+      when:
+        - configure_action == "create"
+        - check_namespace.stderr is search("not found")
+
+    - name: Delete namespace {{ namespace }} for {{ group_names[0] }}
+      shell: kubectl {{ KUBE_CONFIG }} delete namespace {{ namespace }}
+      when:
+        - configure_action == "delete"
+        - check_namespace.stdout is search("Active")

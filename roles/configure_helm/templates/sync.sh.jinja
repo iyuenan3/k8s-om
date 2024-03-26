@@ -1,0 +1,12 @@
+#!/bin/bash
+
+MASTERS=$1
+SSH_PARAMS=$2
+
+for master in $MASTERS; do
+    scp $SSH_PARAMS /usr/local/bin/helm3 [$master]:~/
+    scp $SSH_PARAMS /usr/local/bin/helm2 [$master]:~/
+    ssh $SSH_PARAMS "$master" "sudo mv helm2 helm3 /usr/local/bin/"
+    ssh $SSH_PARAMS "$master" "sudo ln -s -f /usr/local/bin/helm3 /usr/local/bin/helm"
+    ssh $SSH_PARAMS "$master" "sudo rm -f /usr/bin/helm"
+done

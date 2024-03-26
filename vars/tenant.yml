@@ -1,0 +1,25 @@
+# Common variables for configure tenant
+
+#Tenant username prefix and default password
+username_prefix: k8suser
+user_passwd: systeM\!23
+
+# Tenent namespace prefix
+namespace_prefix: k8sns
+
+# Tenant index which used together with username_prefix. The value must be integer and default is 1
+first_user_index: 1
+last_user_index: 3
+
+# Commands configured for /etc/sudoers.d/{{ username }}
+# Command (full path) list with comma separator or ALL
+sudo_cmds: /usr/sbin/tcpdump,/usr/bin/journalctl,/usr/bin/crictl,/usr/bin/podman,/usr/bin/nsenter,/usr/sbin/ip
+
+# CPU request/limit resource quota for tenant. Currently, only CPU resource quota is configured for tenant.
+request_cpu: 60
+limit_cpu: 100
+
+# Host level clusterrole name for tenant
+k8s_node_clusterrole_name: k8s-node-clusterrole
+# Nameapce level clusterrole name for tenant
+k8s_namespace_clusterrole_name: k8s-namespace-clusterrole

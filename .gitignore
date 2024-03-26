@@ -1,0 +1,21 @@
+# python
+*.pyc
+*.idea/
+*.env/
+*.venv/
+*venv/
+
+# Golang
+*.out
+
+# csv temp file
+*.csv~
+
+# commit-msg
+commit-msg
+
+# tool generated
+.vscode
+
+# Others
+**/.DS_Store

@@ -1,0 +1,2 @@
+k8s_node_clusterrole_name: k8s-node-clusterrole
+k8s_namespace_clusterrole_name: k8s-namespace-clusterrole
