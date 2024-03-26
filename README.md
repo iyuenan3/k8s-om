@@ -17,11 +17,9 @@
 
 # Overview
 
-This project contains a few [`ansible`](https://www.ansible.com/) playbooks for infrastructure Operation and Maintenance (O&M). Currently it has following main functionalities:
+This project contains a few [`ansible`](https://www.ansible.com/) playbooks for Kubernetes Operation and Maintenance (O&M). Currently it has following main functionalities:
 
 - Configure tenant for OCP
-- Configure kernel core pattern for OCP
-- Configure default storage class for multi-nodes OCP
 - Configure python soft link for OCP
 - Install helm3 for OCP
 - Install additional command binaries for OCP
