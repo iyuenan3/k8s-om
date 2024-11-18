@@ -1,7 +1,7 @@
 - [Overview](#overview)
 - [Prerequisites](#prerequisites)
-  - [OCP cluster configurations](#ocp-cluster-configurations)
-    - [Configure OCP SSH key](#configure-ocp-ssh-key)
+  - [K8S cluster configurations](#K8S-cluster-configurations)
+    - [Configure K8S SSH key](#configure-K8S-ssh-key)
   - [Jumper server configurations](#jumper-server-configurations)
     - [Prepare jump server](#prepare-jump-server)
     - [Install ansible](#install-ansible)
@@ -19,21 +19,21 @@
 
 This project contains a few [`ansible`](https://www.ansible.com/) playbooks for Kubernetes Operation and Maintenance (O&M). Currently it has following main functionalities:
 
-- Configure tenant for OCP
-- Configure python soft link for OCP
-- Install helm3 for OCP
-- Install additional command binaries for OCP
+- Configure tenant for K8S
+- Configure python soft link for K8S
+- Install helm3 for K8S
+- Install additional command binaries for K8S
 
 Welcome to raise your requirements by creating issues if you see some O&M related tasks are valuable to be implemented here.
 
 
 # Prerequisites
 
-## OCP cluster configurations
+## K8S cluster configurations
 
-### Configure OCP SSH key
+### Configure K8S SSH key
 
-Upload OCP cluster SSH private key to all master node(s), which is used to enable SSH without password from master node to other node(s) in same cluster. For detailed configuration steps, please refer to `k8s-om/docs/configure_ssh_key.md`. Skip this configuration if already done during OCP post configuration phase.
+Upload K8S cluster SSH private key to all master node(s), which is used to enable SSH without password from master node to other node(s) in same cluster. For detailed configuration steps, please refer to `k8s-om/docs/configure_ssh_key.md`. Skip this configuration if already done during K8S post configuration phase.
 
 ## Jumper server configurations
 ### Prepare jump server
@@ -46,7 +46,7 @@ For detailed installation steps, please refer to `k8s-om/docs/install_ansible.md
 
 ### Configure k8s-om
 
-Update host inventory info in `k8s-om/hosts` file, including cluster IP under `[ocp]` section and admin username/password under `[ocp:vars]` section.
+Update host inventory info in `k8s-om/hosts` file, including cluster IP under `[K8S]` section and admin username/password under `[K8S:vars]` section.
 
 # Configurations
 
